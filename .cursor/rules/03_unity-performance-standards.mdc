@@ -1,0 +1,565 @@
+---
+id: "rule-unity-performance"
+name: "Chuẩn hóa Unity Performance"
+description: "Quy tắc tối ưu hóa performance cho Unity"
+version: "1.0.0"
+alwaysApply: true
+enabled: true
+priority: 40
+tags: ["unity", "performance", "optimization"]
+globs: []
+excludeGlobs: []
+scope: "project"
+services: ["*"]
+appliesTo: ["code", "chat"]
+match: ""
+variables: {}
+rules: []
+examples: []
+references: []
+commands: []
+owners: ["devgo2003"]
+createdAt: "2025-01-06T00:00:00Z"
+updatedAt: "2025-01-06T00:00:00Z"
+notes: "Chuẩn hóa performance optimization cho Unity"
+language: vi
+---
+
+# Chuẩn hóa Unity Performance
+
+## Performance Targets
+
+### Frame Rate Targets
+| Platform | Target FPS | Min FPS | VSync |
+|----------|------------|---------|-------|
+| **PC (High-end)** | 60 FPS | 45 FPS | Optional |
+| **PC (Mid-range)** | 60 FPS | 30 FPS | Recommended |
+| **Mobile (High-end)** | 60 FPS | 30 FPS | Recommended |
+| **Mobile (Mid-range)** | 30 FPS | 20 FPS | Required |
+| **Console** | 60 FPS | 30 FPS | Required |
+| **VR** | 90 FPS | 72 FPS | Required |
+
+### Memory Targets
+| Platform | RAM Limit | VRAM Limit | Heap Limit |
+|----------|-----------|------------|------------|
+| **PC** | 4GB | 2GB | 1GB |
+| **Mobile (High-end)** | 2GB | 1GB | 512MB |
+| **Mobile (Mid-range)** | 1GB | 512MB | 256MB |
+| **Console** | 8GB | 4GB | 2GB |
+
+## CPU Optimization
+
+### Update Loop Optimization
+```csharp
+// ❌ SAI - Expensive operations trong Update
+private void Update()
+{
+    // Tìm kiếm objects mỗi frame
+    GameObject player = GameObject.Find("Player");
+    if (player != null)
+    {
+        // Do something
+    }
+}
+
+// ✅ ĐÚNG - Cache references
+private GameObject player;
+
+private void Start()
+{
+    player = GameObject.Find("Player");
+}
+
+private void Update()
+{
+    if (player != null)
+    {
+        // Do something
+    }
+}
+```
+
+### Coroutine Optimization
+```csharp
+// ❌ SAI - Tạo coroutine mỗi frame
+private void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+        StartCoroutine(DoSomething());
+    }
+}
+
+// ✅ ĐÚNG - Sử dụng flags
+private bool isDoingSomething = false;
+
+private void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Space) && !isDoingSomething)
+    {
+        StartCoroutine(DoSomething());
+    }
+}
+
+private IEnumerator DoSomething()
+{
+    isDoingSomething = true;
+    yield return new WaitForSeconds(1f);
+    // Do something
+    isDoingSomething = false;
+}
+```
+
+### Object Pooling
+```csharp
+// Object Pooling System
+public class ObjectPool : MonoBehaviour
+{
+    [SerializeField] private GameObject prefab;
+    [SerializeField] private int poolSize = 10;
+    
+    private Queue<GameObject> pool = new Queue<GameObject>();
+    
+    private void Start()
+    {
+        // Pre-instantiate objects
+        for (int i = 0; i < poolSize; i++)
+        {
+            GameObject obj = Instantiate(prefab);
+            obj.SetActive(false);
+            pool.Enqueue(obj);
+        }
+    }
+    
+    public GameObject GetFromPool()
+    {
+        if (pool.Count > 0)
+        {
+            GameObject obj = pool.Dequeue();
+            obj.SetActive(true);
+            return obj;
+        }
+        
+        // Expand pool if needed
+        GameObject newObj = Instantiate(prefab);
+        return newObj;
+    }
+    
+    public void ReturnToPool(GameObject obj)
+    {
+        obj.SetActive(false);
+        pool.Enqueue(obj);
+    }
+}
+```
+
+## Memory Optimization
+
+### Garbage Collection Optimization
+```csharp
+// ❌ SAI - Tạo objects trong Update
+private void Update()
+{
+    Vector3 newPosition = new Vector3(1, 2, 3);
+    transform.position = newPosition;
+}
+
+// ✅ ĐÚNG - Reuse objects
+private Vector3 newPosition = new Vector3();
+
+private void Update()
+{
+    newPosition.Set(1, 2, 3);
+    transform.position = newPosition;
+}
+```
+
+### String Optimization
+```csharp
+// ❌ SAI - String concatenation
+private void Update()
+{
+    string message = "Score: " + score + " Time: " + time;
+    uiText.text = message;
+}
+
+// ✅ ĐÚNG - StringBuilder
+private StringBuilder stringBuilder = new StringBuilder();
+
+private void Update()
+{
+    stringBuilder.Clear();
+    stringBuilder.Append("Score: ");
+    stringBuilder.Append(score);
+    stringBuilder.Append(" Time: ");
+    stringBuilder.Append(time);
+    uiText.text = stringBuilder.ToString();
+}
+```
+
+### Array and List Optimization
+```csharp
+// ❌ SAI - Resize list mỗi frame
+private List<GameObject> enemies = new List<GameObject>();
+
+private void Update()
+{
+    enemies.Clear();
+    enemies.AddRange(FindObjectsOfType<Enemy>());
+}
+
+// ✅ ĐÚNG - Pre-allocate và reuse
+private List<GameObject> enemies = new List<GameObject>(100);
+
+private void Update()
+{
+    enemies.Clear();
+    // Use GetComponentsInChildren or other efficient methods
+    GetComponentsInChildren<Enemy>(enemies);
+}
+```
+
+## Graphics Optimization
+
+### Draw Call Optimization
+```csharp
+// Draw Call Counter
+public class DrawCallCounter : MonoBehaviour
+{
+    private void OnGUI()
+    {
+        GUILayout.Label("Draw Calls: " + UnityStats.drawCalls);
+        GUILayout.Label("Batches: " + UnityStats.batches);
+        GUILayout.Label("Triangles: " + UnityStats.triangles);
+        GUILayout.Label("Vertices: " + UnityStats.vertices);
+    }
+}
+```
+
+### Texture Optimization
+```csharp
+// Texture Atlas Creator
+public class TextureAtlasCreator : MonoBehaviour
+{
+    [MenuItem("Tools/Create Texture Atlas")]
+    public static void CreateTextureAtlas()
+    {
+        // Combine multiple textures into one atlas
+        Texture2D[] textures = Resources.LoadAll<Texture2D>("Sprites");
+        
+        Texture2D atlas = new Texture2D(2048, 2048);
+        Rect[] rects = atlas.PackTextures(textures, 2, 2048);
+        
+        // Save atlas
+        byte[] pngData = atlas.EncodeToPNG();
+        File.WriteAllBytes("Assets/Textures/Atlas.png", pngData);
+        
+        AssetDatabase.Refresh();
+    }
+}
+```
+
+### LOD System
+```csharp
+// LOD Manager
+public class LODManager : MonoBehaviour
+{
+    [SerializeField] private Transform player;
+    [SerializeField] private float[] lodDistances = { 10f, 25f, 50f };
+    
+    private void Update()
+    {
+        float distance = Vector3.Distance(transform.position, player.position);
+        
+        if (distance < lodDistances[0])
+        {
+            SetLODLevel(0); // High detail
+        }
+        else if (distance < lodDistances[1])
+        {
+            SetLODLevel(1); // Medium detail
+        }
+        else if (distance < lodDistances[2])
+        {
+            SetLODLevel(2); // Low detail
+        }
+        else
+        {
+            SetLODLevel(3); // Culled
+        }
+    }
+    
+    private void SetLODLevel(int level)
+    {
+        // Implement LOD switching logic
+    }
+}
+```
+
+## Audio Optimization
+
+### Audio Pooling
+```csharp
+// Audio Pool Manager
+public class AudioPoolManager : MonoBehaviour
+{
+    [SerializeField] private AudioSource audioSourcePrefab;
+    [SerializeField] private int poolSize = 10;
+    
+    private Queue<AudioSource> audioPool = new Queue<AudioSource>();
+    
+    private void Start()
+    {
+        for (int i = 0; i < poolSize; i++)
+        {
+            AudioSource source = Instantiate(audioSourcePrefab);
+            source.gameObject.SetActive(false);
+            audioPool.Enqueue(source);
+        }
+    }
+    
+    public void PlaySound(AudioClip clip, Vector3 position)
+    {
+        AudioSource source = GetAudioSource();
+        source.transform.position = position;
+        source.clip = clip;
+        source.Play();
+        
+        StartCoroutine(ReturnToPoolAfterPlay(source));
+    }
+    
+    private AudioSource GetAudioSource()
+    {
+        if (audioPool.Count > 0)
+        {
+            AudioSource source = audioPool.Dequeue();
+            source.gameObject.SetActive(true);
+            return source;
+        }
+        
+        return Instantiate(audioSourcePrefab);
+    }
+    
+    private IEnumerator ReturnToPoolAfterPlay(AudioSource source)
+    {
+        yield return new WaitForSeconds(source.clip.length);
+        source.gameObject.SetActive(false);
+        audioPool.Enqueue(source);
+    }
+}
+```
+
+## UI Optimization
+
+### Canvas Optimization
+```csharp
+// Canvas Manager
+public class CanvasManager : MonoBehaviour
+{
+    [SerializeField] private Canvas mainCanvas;
+    [SerializeField] private Canvas uiCanvas;
+    [SerializeField] private Canvas worldCanvas;
+    
+    private void Start()
+    {
+        // Separate UI elements by update frequency
+        mainCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        uiCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+        worldCanvas.renderMode = RenderMode.WorldSpace;
+    }
+}
+```
+
+### UI Pooling
+```csharp
+// UI Element Pool
+public class UIPool : MonoBehaviour
+{
+    [SerializeField] private GameObject uiElementPrefab;
+    [SerializeField] private int poolSize = 20;
+    
+    private Queue<GameObject> uiPool = new Queue<GameObject>();
+    
+    private void Start()
+    {
+        for (int i = 0; i < poolSize; i++)
+        {
+            GameObject element = Instantiate(uiElementPrefab);
+            element.SetActive(false);
+            uiPool.Enqueue(element);
+        }
+    }
+    
+    public GameObject GetUIElement()
+    {
+        if (uiPool.Count > 0)
+        {
+            GameObject element = uiPool.Dequeue();
+            element.SetActive(true);
+            return element;
+        }
+        
+        return Instantiate(uiElementPrefab);
+    }
+    
+    public void ReturnUIElement(GameObject element)
+    {
+        element.SetActive(false);
+        uiPool.Enqueue(element);
+    }
+}
+```
+
+## Profiling Tools
+
+### Performance Monitor
+```csharp
+// Performance Monitor
+public class PerformanceMonitor : MonoBehaviour
+{
+    [SerializeField] private bool showFPS = true;
+    [SerializeField] private bool showMemory = true;
+    [SerializeField] private bool showDrawCalls = true;
+    
+    private float fps;
+    private float memoryUsage;
+    
+    private void Update()
+    {
+        fps = 1.0f / Time.deltaTime;
+        memoryUsage = System.GC.GetTotalMemory(false) / 1024f / 1024f;
+    }
+    
+    private void OnGUI()
+    {
+        if (showFPS)
+        {
+            GUILayout.Label($"FPS: {fps:F1}");
+        }
+        
+        if (showMemory)
+        {
+            GUILayout.Label($"Memory: {memoryUsage:F1} MB");
+        }
+        
+        if (showDrawCalls)
+        {
+            GUILayout.Label($"Draw Calls: {UnityStats.drawCalls}");
+        }
+    }
+}
+```
+
+### Memory Profiler
+```csharp
+// Memory Profiler
+public class MemoryProfiler : MonoBehaviour
+{
+    [MenuItem("Tools/Profile Memory")]
+    public static void ProfileMemory()
+    {
+        // Force garbage collection
+        System.GC.Collect();
+        
+        // Log memory usage
+        Debug.Log($"Total Memory: {System.GC.GetTotalMemory(false) / 1024f / 1024f:F1} MB");
+        Debug.Log($"Used Memory: {UnityEngine.Profiling.Profiler.GetTotalAllocatedMemory(false) / 1024f / 1024f:F1} MB");
+        Debug.Log($"Reserved Memory: {UnityEngine.Profiling.Profiler.GetTotalReservedMemory(false) / 1024f / 1024f:F1} MB");
+    }
+}
+```
+
+## Mobile Optimization
+
+### Mobile Performance Settings
+```csharp
+// Mobile Performance Manager
+public class MobilePerformanceManager : MonoBehaviour
+{
+    private void Start()
+    {
+        // Detect mobile platform
+        if (Application.platform == RuntimePlatform.Android || 
+            Application.platform == RuntimePlatform.IPhonePlayer)
+        {
+            ApplyMobileSettings();
+        }
+    }
+    
+    private void ApplyMobileSettings()
+    {
+        // Reduce quality settings
+        QualitySettings.SetQualityLevel(1);
+        
+        // Limit frame rate
+        Application.targetFrameRate = 30;
+        
+        // Reduce texture quality
+        QualitySettings.masterTextureLimit = 1;
+        
+        // Disable unnecessary features
+        QualitySettings.anisotropicFiltering = AnisotropicFiltering.Disable;
+        QualitySettings.antiAliasing = 0;
+    }
+}
+```
+
+### Battery Optimization
+```csharp
+// Battery Optimization
+public class BatteryOptimizer : MonoBehaviour
+{
+    private void Start()
+    {
+        // Reduce update frequency when battery is low
+        if (SystemInfo.batteryLevel < 0.2f)
+        {
+            Time.timeScale = 0.5f;
+        }
+    }
+    
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            // Pause game when app is backgrounded
+            Time.timeScale = 0f;
+        }
+        else
+        {
+            // Resume game when app is foregrounded
+            Time.timeScale = 1f;
+        }
+    }
+}
+```
+
+## Best Practices
+
+### 1. Profiling
+- Sử dụng Unity Profiler thường xuyên
+- Monitor memory usage và garbage collection
+- Test trên target devices
+- Use frame debugger cho graphics issues
+
+### 2. Optimization Strategy
+- Optimize bottlenecks trước
+- Measure before and after changes
+- Test trên multiple devices
+- Consider platform differences
+
+### 3. Code Quality
+- Avoid expensive operations in Update
+- Use object pooling
+- Cache frequently used references
+- Minimize garbage collection
+
+### 4. Asset Management
+- Use texture atlases
+- Implement LOD systems
+- Optimize audio compression
+- Use appropriate texture formats
+
+---
+
+**Lưu ý**: Performance optimization là quá trình liên tục. Luôn test và measure để đảm bảo improvements thực sự hiệu quả.

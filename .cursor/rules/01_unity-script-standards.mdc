@@ -1,0 +1,379 @@
+---
+id: "rule-unity-scripts"
+name: "Chuẩn hóa Unity Scripts"
+description: "Quy tắc viết C# scripts cho Unity"
+version: "1.0.0"
+alwaysApply: true
+enabled: true
+priority: 20
+tags: ["unity", "scripts", "csharp"]
+globs: ["**/*.cs"]
+excludeGlobs: []
+scope: "project"
+services: ["*"]
+appliesTo: ["code", "chat"]
+match: ""
+variables: {}
+rules: []
+examples: []
+references: []
+commands: []
+owners: ["devgo2003"]
+createdAt: "2025-01-06T00:00:00Z"
+updatedAt: "2025-01-06T00:00:00Z"
+notes: "Chuẩn hóa code structure cho Unity scripts"
+language: vi
+---
+
+# Chuẩn hóa Unity Scripts
+
+## Cấu trúc script chuẩn
+
+```csharp
+using UnityEngine;
+using System.Collections;
+
+namespace YourProject.Core
+{
+    /// <summary>
+    /// Mô tả chức năng của script
+    /// </summary>
+    public class PlayerController : MonoBehaviour
+    {
+        #region Fields
+        [Header("Movement Settings")]
+        [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] private float jumpForce = 10f;
+        
+        [Header("References")]
+        [SerializeField] private Rigidbody rb;
+        [SerializeField] private Transform groundCheck;
+        
+        // Private fields
+        private bool isGrounded;
+        private float horizontalInput;
+        #endregion
+
+        #region Unity Lifecycle
+        private void Awake()
+        {
+            // Initialize components
+        }
+
+        private void Start()
+        {
+            // Setup initial state
+        }
+
+        private void Update()
+        {
+            // Input handling
+            HandleInput();
+        }
+
+        private void FixedUpdate()
+        {
+            // Physics calculations
+            HandleMovement();
+        }
+
+        private void OnDestroy()
+        {
+            // Cleanup
+        }
+        #endregion
+
+        #region Public Methods
+        public void Jump()
+        {
+            if (isGrounded)
+            {
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            }
+        }
+
+        public void SetMoveSpeed(float speed)
+        {
+            moveSpeed = speed;
+        }
+        #endregion
+
+        #region Private Methods
+        private void HandleInput()
+        {
+            horizontalInput = Input.GetAxis("Horizontal");
+            
+            if (Input.GetButtonDown("Jump"))
+            {
+                Jump();
+            }
+        }
+
+        private void HandleMovement()
+        {
+            Vector3 movement = new Vector3(horizontalInput, 0f, 0f) * moveSpeed * Time.fixedDeltaTime;
+            rb.MovePosition(transform.position + movement);
+        }
+        #endregion
+
+        #region Events
+        public event System.Action OnPlayerDied;
+        public event System.Action<int> OnScoreChanged;
+        #endregion
+    }
+}
+```
+
+## Quy tắc đặt tên
+
+### Classes và Interfaces
+- **Classes**: PascalCase (PlayerController, GameManager, UIManager)
+- **Interfaces**: PascalCase với prefix I (IPlayerController, IGameManager)
+- **Enums**: PascalCase (PlayerState, GameMode)
+- **Structs**: PascalCase (PlayerData, GameSettings)
+
+### Methods và Properties
+- **Public Methods**: PascalCase (MovePlayer, UpdateHealth, GetScore)
+- **Private Methods**: PascalCase (HandleInput, CalculateDamage)
+- **Properties**: PascalCase (Health, IsAlive, CurrentScore)
+- **Events**: PascalCase (OnPlayerDied, OnScoreChanged, OnGameStarted)
+
+### Fields và Variables
+- **Public Fields**: PascalCase (MoveSpeed, JumpForce) - Tránh sử dụng
+- **Private Fields**: camelCase (moveSpeed, isGrounded, currentHealth)
+- **Static Fields**: PascalCase (MaxHealth, DefaultSpeed)
+- **Constants**: UPPER_CASE (MAX_HEALTH, DEFAULT_SPEED, LAYER_PLAYER)
+- **Local Variables**: camelCase (playerPosition, enemyCount, tempValue)
+
+## Attributes chuẩn
+
+### SerializeField và Public Fields
+```csharp
+[Header("Movement Settings")]
+[SerializeField] private float moveSpeed = 5f;
+[SerializeField] private float jumpForce = 10f;
+
+[Header("References")]
+[SerializeField] private Rigidbody rb;
+[SerializeField] private Transform groundCheck;
+
+[Header("Audio")]
+[SerializeField] private AudioSource audioSource;
+[SerializeField] private AudioClip jumpSound;
+```
+
+### Validation Attributes
+```csharp
+[Range(0f, 100f)]
+[SerializeField] private float health = 100f;
+
+[Min(0f)]
+[SerializeField] private float moveSpeed = 5f;
+
+[Tooltip("Tốc độ di chuyển của player")]
+[SerializeField] private float moveSpeed = 5f;
+
+[RequireComponent(typeof(Rigidbody))]
+public class PlayerController : MonoBehaviour
+```
+
+## Code Organization
+
+### Region Structure
+```csharp
+public class ExampleScript : MonoBehaviour
+{
+    #region Fields
+    // All fields here
+    #endregion
+
+    #region Unity Lifecycle
+    // Awake, Start, Update, FixedUpdate, OnDestroy
+    #endregion
+
+    #region Public Methods
+    // Public methods
+    #endregion
+
+    #region Private Methods
+    // Private methods
+    #endregion
+
+    #region Events
+    // Events and delegates
+    #endregion
+
+    #region Properties
+    // Properties
+    #endregion
+}
+```
+
+### Method Ordering
+1. Unity Lifecycle methods (Awake, Start, Update, etc.)
+2. Public methods
+3. Private methods
+4. Event handlers
+5. Properties
+
+## Performance Guidelines
+
+### Update Optimization
+```csharp
+// ❌ SAI - Gọi expensive operations trong Update
+private void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+        // Expensive operation
+        FindObjectOfType<GameManager>().DoSomething();
+    }
+}
+
+// ✅ ĐÚNG - Cache references và optimize
+private GameManager gameManager;
+
+private void Start()
+{
+    gameManager = FindObjectOfType<GameManager>();
+}
+
+private void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+        gameManager.DoSomething();
+    }
+}
+```
+
+### Memory Management
+```csharp
+// ❌ SAI - Tạo objects trong Update
+private void Update()
+{
+    Vector3 newPosition = new Vector3(1, 2, 3);
+    transform.position = newPosition;
+}
+
+// ✅ ĐÚNG - Reuse objects
+private Vector3 newPosition = new Vector3();
+
+private void Update()
+{
+    newPosition.Set(1, 2, 3);
+    transform.position = newPosition;
+}
+```
+
+## Best Practices
+
+### 1. Null Checks
+```csharp
+// Luôn kiểm tra null trước khi sử dụng
+if (rb != null)
+{
+    rb.AddForce(Vector3.up * jumpForce);
+}
+```
+
+### 2. Component Caching
+```csharp
+// Cache components trong Awake/Start
+private Rigidbody rb;
+
+private void Awake()
+{
+    rb = GetComponent<Rigidbody>();
+}
+```
+
+### 3. Event Unsubscription
+```csharp
+private void OnDestroy()
+{
+    // Unsubscribe từ events để tránh memory leaks
+    GameManager.OnGameOver -= HandleGameOver;
+}
+```
+
+### 4. Coroutines
+```csharp
+// Sử dụng coroutines cho operations cần thời gian
+private IEnumerator DelayedAction()
+{
+    yield return new WaitForSeconds(1f);
+    // Do something after delay
+}
+```
+
+## Documentation Standards
+
+### XML Documentation
+```csharp
+/// <summary>
+/// Controls player movement and input handling
+/// </summary>
+/// <remarks>
+/// This script handles:
+/// - Player movement with WASD keys
+/// - Jumping with Space key
+/// - Ground detection
+/// </remarks>
+public class PlayerController : MonoBehaviour
+{
+    /// <summary>
+    /// Makes the player jump if grounded
+    /// </summary>
+    /// <param name="force">Jump force multiplier (default: 1.0)</param>
+    public void Jump(float force = 1.0f)
+    {
+        // Implementation
+    }
+}
+```
+
+## Error Handling
+
+### Try-Catch Blocks
+```csharp
+private void LoadData()
+{
+    try
+    {
+        // Load data operation
+        string data = File.ReadAllText(dataPath);
+        ProcessData(data);
+    }
+    catch (FileNotFoundException ex)
+    {
+        Debug.LogError($"Data file not found: {ex.Message}");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"Error loading data: {ex.Message}");
+    }
+}
+```
+
+## Testing Support
+
+### Public Methods for Testing
+```csharp
+// Public methods để test
+public void SetHealth(float newHealth)
+{
+    health = Mathf.Clamp(newHealth, 0f, maxHealth);
+    OnHealthChanged?.Invoke(health);
+}
+
+// Test helper methods
+public bool IsGrounded()
+{
+    return isGrounded;
+}
+```
+
+---
+
+**Lưu ý**: Tuân thủ các quy tắc này để đảm bảo code Unity dễ đọc, dễ maintain và có performance tốt.

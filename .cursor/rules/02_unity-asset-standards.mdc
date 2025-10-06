@@ -1,0 +1,511 @@
+---
+id: "rule-unity-assets"
+name: "Chuẩn hóa Unity Assets"
+description: "Quy tắc quản lý assets trong Unity"
+version: "1.0.0"
+alwaysApply: true
+enabled: true
+priority: 30
+tags: ["unity", "assets", "optimization"]
+globs: ["**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.tga", "**/*.psd", "**/*.fbx", "**/*.obj", "**/*.wav", "**/*.mp3", "**/*.ogg"]
+excludeGlobs: []
+scope: "project"
+services: ["*"]
+appliesTo: ["code", "chat"]
+match: ""
+variables: {}
+rules: []
+examples: []
+references: []
+commands: []
+owners: ["devgo2003"]
+createdAt: "2025-01-06T00:00:00Z"
+updatedAt: "2025-01-06T00:00:00Z"
+notes: "Chuẩn hóa asset management và optimization"
+language: vi
+---
+
+# Chuẩn hóa Unity Assets
+
+## Texture Settings
+
+### Import Settings chuẩn
+```csharp
+// Texture Import Settings
+TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(assetPath);
+
+// Cơ bản
+importer.textureType = TextureImporterType.Sprite;
+importer.spriteImportMode = SpriteImportMode.Single;
+importer.wrapMode = TextureWrapMode.Clamp;
+importer.filterMode = FilterMode.Bilinear;
+
+// Compression
+importer.textureCompression = TextureImporterCompression.Compressed;
+importer.compressionQuality = 50; // 0-100
+
+// Platform specific
+importer.SetPlatformTextureSettings("Android", 2048, TextureImporterFormat.ASTC_6x6);
+importer.SetPlatformTextureSettings("iPhone", 2048, TextureImporterFormat.ASTC_6x6);
+importer.SetPlatformTextureSettings("Standalone", 2048, TextureImporterFormat.DXT5);
+```
+
+### Texture Guidelines
+
+| Loại Texture | Format | Max Size | Compression | Mip Maps |
+|--------------|--------|----------|-------------|----------|
+| **UI Sprites** | RGBA32 | 1024x1024 | High Quality | ❌ |
+| **3D Textures** | RGBA32 | 2048x2048 | Medium Quality | ✅ |
+| **Normal Maps** | RGB24 | 1024x1024 | High Quality | ✅ |
+| **Lightmaps** | RGB24 | 2048x2048 | High Quality | ✅ |
+| **Icons** | RGBA32 | 256x256 | High Quality | ❌ |
+
+### Texture Naming Convention
+```
+// UI Elements
+ui_button_normal.png
+ui_button_pressed.png
+ui_button_hover.png
+
+// Character Sprites
+player_idle_01.png
+player_walk_01.png
+player_jump_01.png
+
+// Environment
+env_grass_01.png
+env_stone_01.png
+env_water_01.png
+
+// Icons
+icon_health.png
+icon_ammo.png
+icon_powerup.png
+```
+
+## Model Settings
+
+### Import Settings chuẩn
+```csharp
+// Model Import Settings
+ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(assetPath);
+
+// Scale
+importer.globalScale = 1.0f;
+importer.scaleFactor = 1.0f;
+
+// Mesh
+importer.meshCompression = ModelImporterMeshCompression.Medium;
+importer.isReadable = false; // Trừ khi cần modify runtime
+importer.optimizeMesh = true;
+importer.importBlendShapes = false; // Chỉ khi cần
+
+// Animation
+importer.importAnimation = true;
+importer.animationType = ModelImporterAnimationType.Generic;
+importer.animationCompression = ModelImporterAnimationCompression.KeyframeReduction;
+
+// Materials
+importer.materialImportMode = ModelImporterMaterialImportMode.ImportViaMaterialDescription;
+```
+
+### Model Guidelines
+
+| Loại Model | Polygon Count | LOD Levels | Collider |
+|------------|---------------|------------|----------|
+| **Main Character** | 5,000-15,000 | 3 | ✅ |
+| **Enemy** | 2,000-8,000 | 2 | ✅ |
+| **Environment** | 1,000-5,000 | 2 | ✅ |
+| **Props** | 100-1,000 | 1 | ✅ |
+| **UI 3D** | 50-500 | 1 | ❌ |
+
+### Model Naming Convention
+```
+// Characters
+char_player_01.fbx
+char_enemy_spider_01.fbx
+char_npc_merchant_01.fbx
+
+// Environment
+env_building_house_01.fbx
+env_prop_tree_01.fbx
+env_terrain_grass_01.fbx
+
+// Weapons
+weapon_sword_01.fbx
+weapon_gun_pistol_01.fbx
+weapon_bow_01.fbx
+```
+
+## Audio Settings
+
+### Import Settings chuẩn
+```csharp
+// Audio Import Settings
+AudioImporter importer = (AudioImporter)AssetImporter.GetAtPath(assetPath);
+
+// Cơ bản
+importer.forceToMono = false; // Trừ khi cần mono
+importer.loadInBackground = true;
+importer.ambisonic = false;
+
+// Compression
+importer.defaultSampleSettings = new AudioImporterSampleSettings
+{
+    loadType = AudioClipLoadType.CompressedInMemory,
+    compressionFormat = AudioCompressionFormat.Vorbis,
+    quality = 0.7f, // 0.0-1.0
+    sampleRateOverride = 44100
+};
+```
+
+### Audio Guidelines
+
+| Loại Audio | Format | Quality | Load Type | 3D Sound |
+|------------|--------|---------|-----------|----------|
+| **Background Music** | Vorbis | 70% | Streaming | ❌ |
+| **Sound Effects** | Vorbis | 50% | Compressed In Memory | ✅ |
+| **Voice Lines** | Vorbis | 60% | Compressed In Memory | ✅ |
+| **UI Sounds** | Vorbis | 40% | Compressed In Memory | ❌ |
+| **Ambient** | Vorbis | 30% | Streaming | ✅ |
+
+### Audio Naming Convention
+```
+// Music
+music_main_theme.ogg
+music_battle_theme.ogg
+music_menu_theme.ogg
+
+// Sound Effects
+sfx_jump_01.wav
+sfx_coin_collect.wav
+sfx_explosion_01.wav
+
+// Voice
+voice_player_hurt_01.wav
+voice_npc_greeting_01.wav
+voice_announcer_round_start.wav
+
+// UI Sounds
+ui_button_click.wav
+ui_menu_open.wav
+ui_notification.wav
+```
+
+## Asset Organization Structure
+
+### Cấu trúc thư mục _Game
+```
+_Game/                    # Thư mục chính chứa tất cả game assets
+├── Scripts/              # C# scripts
+├── Prefabs/              # Prefab assets
+├── Materials/            # Material assets
+├── Textures/             # Texture assets
+├── Models/               # 3D model assets
+├── Audio/                # Audio assets
+├── Scenes/               # Unity scenes
+├── Animations/           # Animation assets
+├── Shaders/              # Custom shaders
+├── Resources/            # Runtime assets
+└── StreamingAssets/      # Platform-specific assets
+```
+
+### Lý do sử dụng _Game thay vì Assets
+- **Tránh nhầm lẫn** với thư mục Packages
+- **Tách biệt rõ ràng** game assets và package assets
+- **Dễ quản lý** và tìm kiếm assets
+- **Version control** hiệu quả hơn
+- **Build optimization** tốt hơn
+
+### Setup cấu trúc thư mục
+```csharp
+// Script để tạo cấu trúc thư mục _Game
+[MenuItem("Tools/Create Game Folder Structure")]
+public static void CreateGameFolderStructure()
+{
+    string[] folders = {
+        "_Game",
+        "_Game/Scripts",
+        "_Game/Prefabs",
+        "_Game/Materials", 
+        "_Game/Textures",
+        "_Game/Models",
+        "_Game/Audio",
+        "_Game/Scenes",
+        "_Game/Animations",
+        "_Game/Shaders",
+        "_Game/Resources",
+        "_Game/StreamingAssets"
+    };
+    
+    foreach (string folder in folders)
+    {
+        if (!AssetDatabase.IsValidFolder("Assets/" + folder))
+        {
+            string parentFolder = folder.Contains("/") ? 
+                "Assets/" + folder.Substring(0, folder.LastIndexOf("/")) : 
+                "Assets";
+            string folderName = folder.Contains("/") ? 
+                folder.Substring(folder.LastIndexOf("/") + 1) : 
+                folder;
+            
+            AssetDatabase.CreateFolder(parentFolder, folderName);
+        }
+    }
+    
+    AssetDatabase.Refresh();
+    Debug.Log("Game folder structure created successfully!");
+}
+```
+
+## Prefab Organization
+
+### Prefab Structure
+```
+_Game/
+├── Prefabs/
+│   ├── Characters/
+│   │   ├── Player.prefab
+│   │   ├── Enemy_Spider.prefab
+│   │   └── NPC_Merchant.prefab
+│   ├── Environment/
+│   │   ├── Building_House.prefab
+│   │   ├── Prop_Tree.prefab
+│   │   └── Terrain_Grass.prefab
+│   ├── UI/
+│   │   ├── UI_Button.prefab
+│   │   ├── UI_Panel.prefab
+│   │   └── UI_Dialog.prefab
+│   └── Weapons/
+│       ├── Weapon_Sword.prefab
+│       ├── Weapon_Gun.prefab
+│       └── Weapon_Bow.prefab
+```
+
+### Prefab Naming Convention
+```
+// Characters
+Player.prefab
+Enemy_Spider.prefab
+NPC_Merchant.prefab
+
+// Environment
+Building_House_01.prefab
+Prop_Tree_Oak.prefab
+Terrain_Grass_Field.prefab
+
+// UI Elements
+UI_Button_Main.prefab
+UI_Panel_Inventory.prefab
+UI_Dialog_Shop.prefab
+
+// Weapons
+Weapon_Sword_Iron.prefab
+Weapon_Gun_Pistol.prefab
+Weapon_Bow_Elven.prefab
+```
+
+## Material Organization
+
+### Material Structure
+```
+_Game/
+├── Materials/
+│   ├── Characters/
+│   │   ├── Player_Material.mat
+│   │   ├── Enemy_Material.mat
+│   │   └── NPC_Material.mat
+│   ├── Environment/
+│   │   ├── Ground_Material.mat
+│   │   ├── Stone_Material.mat
+│   │   └── Water_Material.mat
+│   ├── UI/
+│   │   ├── UI_Button_Material.mat
+│   │   ├── UI_Panel_Material.mat
+│   │   └── UI_Text_Material.mat
+│   └── Effects/
+│       ├── Fire_Material.mat
+│       ├── Water_Material.mat
+│       └── Smoke_Material.mat
+```
+
+### Material Naming Convention
+```
+// Character Materials
+Player_Material.mat
+Enemy_Spider_Material.mat
+NPC_Merchant_Material.mat
+
+// Environment Materials
+Ground_Grass_Material.mat
+Stone_Rock_Material.mat
+Water_Lake_Material.mat
+
+// UI Materials
+UI_Button_Normal.mat
+UI_Button_Pressed.mat
+UI_Panel_Background.mat
+
+// Effect Materials
+Fire_Effect_Material.mat
+Water_Splash_Material.mat
+Smoke_Particle_Material.mat
+```
+
+## Asset Optimization
+
+### Texture Optimization
+```csharp
+// Texture Optimization Script
+public class TextureOptimizer : MonoBehaviour
+{
+    [MenuItem("Tools/Optimize Textures")]
+    public static void OptimizeTextures()
+    {
+        string[] guids = AssetDatabase.FindAssets("t:Texture2D");
+        
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            
+            // Apply optimization settings
+            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.compressionQuality = 50;
+            
+            // Platform specific settings
+            importer.SetPlatformTextureSettings("Android", 1024, TextureImporterFormat.ASTC_6x6);
+            importer.SetPlatformTextureSettings("iPhone", 1024, TextureImporterFormat.ASTC_6x6);
+            
+            AssetDatabase.ImportAsset(path);
+        }
+    }
+}
+```
+
+### Model Optimization
+```csharp
+// Model Optimization Script
+public class ModelOptimizer : MonoBehaviour
+{
+    [MenuItem("Tools/Optimize Models")]
+    public static void OptimizeModels()
+    {
+        string[] guids = AssetDatabase.FindAssets("t:Model");
+        
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(path);
+            
+            // Apply optimization settings
+            importer.meshCompression = ModelImporterMeshCompression.Medium;
+            importer.isReadable = false;
+            importer.optimizeMesh = true;
+            
+            AssetDatabase.ImportAsset(path);
+        }
+    }
+}
+```
+
+## Memory Management
+
+### Asset Loading
+```csharp
+// Async Asset Loading
+public class AssetLoader : MonoBehaviour
+{
+    private Dictionary<string, Object> loadedAssets = new Dictionary<string, Object>();
+    
+    public async Task<T> LoadAssetAsync<T>(string path) where T : Object
+    {
+        if (loadedAssets.ContainsKey(path))
+        {
+            return loadedAssets[path] as T;
+        }
+        
+        var request = Resources.LoadAsync<T>(path);
+        await Task.Yield();
+        
+        while (!request.isDone)
+        {
+            await Task.Yield();
+        }
+        
+        loadedAssets[path] = request.asset;
+        return request.asset as T;
+    }
+    
+    public void UnloadAsset(string path)
+    {
+        if (loadedAssets.ContainsKey(path))
+        {
+            Resources.UnloadAsset(loadedAssets[path]);
+            loadedAssets.Remove(path);
+        }
+    }
+}
+```
+
+### Asset Pooling
+```csharp
+// Asset Pooling System
+public class AssetPool : MonoBehaviour
+{
+    private Dictionary<string, Queue<GameObject>> pools = new Dictionary<string, Queue<GameObject>>();
+    
+    public GameObject GetFromPool(string assetName)
+    {
+        if (!pools.ContainsKey(assetName))
+        {
+            pools[assetName] = new Queue<GameObject>();
+        }
+        
+        if (pools[assetName].Count > 0)
+        {
+            return pools[assetName].Dequeue();
+        }
+        
+        return Instantiate(Resources.Load<GameObject>(assetName));
+    }
+    
+    public void ReturnToPool(string assetName, GameObject obj)
+    {
+        obj.SetActive(false);
+        pools[assetName].Enqueue(obj);
+    }
+}
+```
+
+## Best Practices
+
+### 1. Asset Organization
+- **Sử dụng thư mục `_Game`** làm root cho tất cả game assets
+- **Sử dụng thư mục con** để phân loại assets theo chức năng
+- **Đặt tên rõ ràng** và có ý nghĩa cho tất cả assets
+- **Sử dụng version numbers** cho variants (01, 02, 03...)
+- **Tách biệt assets** theo platform nếu cần
+- **Tránh đặt assets** trực tiếp trong thư mục Assets root
+
+### 2. Import Settings
+- Tối ưu import settings cho từng loại asset
+- Sử dụng platform-specific settings
+- Kiểm tra memory usage thường xuyên
+- Test trên target platforms
+
+### 3. Performance
+- Sử dụng texture atlases cho UI
+- Implement LOD cho 3D models
+- Sử dụng object pooling
+- Load assets async khi có thể
+
+### 4. Version Control
+- Sử dụng .gitignore cho temporary files
+- Commit assets với proper compression
+- Sử dụng Git LFS cho large files
+- Document asset changes
+
+---
+
+**Lưu ý**: Tuân thủ các quy tắc này để đảm bảo assets được quản lý hiệu quả và tối ưu performance.

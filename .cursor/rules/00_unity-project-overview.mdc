@@ -1,0 +1,116 @@
+---
+id: "rule-unity-overview"
+name: "Tổng quan dự án Unity"
+description: "Tổng quan kiến trúc, cấu trúc thư mục và quy tắc Unity development"
+version: "1.0.0"
+alwaysApply: true
+enabled: true
+priority: 10
+tags: ["unity", "overview", "architecture"]
+globs: []
+excludeGlobs: []
+scope: "project"
+services: ["*"]
+appliesTo: ["code", "chat"]
+match: ""
+variables: {}
+rules: []
+examples: []
+references: []
+commands: []
+owners: ["devgo2003"]
+createdAt: "2025-01-06T00:00:00Z"
+updatedAt: "2025-01-06T00:00:00Z"
+notes: "Luôn nạp để định hướng tổng thể cho Unity development"
+language: vi
+---
+
+# Tổng quan dự án Unity
+
+Dự án Unity sử dụng kiến trúc component-based với các quy tắc chuẩn hóa để dễ quản lý và bảo trì.
+
+## 📋 Danh mục rule files
+
+### 1. Unity Script Standards (`unity-script-standards.mdc`)
+- Chuẩn hóa viết C# scripts cho Unity
+- Naming conventions, code structure
+- MonoBehaviour patterns và best practices
+- Performance optimization guidelines
+
+### 2. Unity Asset Standards (`unity-asset-standards.mdc`)
+- Quản lý assets (textures, models, audio)
+- Import settings và optimization
+- Asset organization và naming
+- Memory management
+
+### 3. Unity Performance Standards (`unity-performance-standards.mdc`)
+- Performance profiling và optimization
+- Memory management
+- Draw call optimization
+- Mobile performance guidelines
+
+### 4. Unity Testing Standards (`unity-testing-standards.mdc`)
+- Unit testing với Unity Test Framework
+- Integration testing
+- Performance testing
+- Automated testing workflows
+
+### 5. Unity Build Standards (`unity-build-standards.mdc`)
+- Build configuration cho các platforms
+- Build automation và CI/CD
+- Platform-specific optimizations
+- Distribution workflows
+
+## 🎯 Mục tiêu chung
+- Chuẩn hóa code structure và naming conventions
+- Tối ưu hóa performance và memory usage
+- Đồng nhất cách viết scripts và quản lý assets
+- Tối ưu workflow phát triển và build
+- Đảm bảo code quality và maintainability
+
+## 🏗️ Cấu trúc Unity Project
+
+### Danh sách thư mục chuẩn
+
+| Thư mục | Mục đích | Quy tắc đặt tên |
+|---------|----------|-----------------|
+| **Scripts/** | C# scripts | PascalCase cho folders |
+| **Art/** | 2D/3D assets | PascalCase cho folders |
+| **Audio/** | Sound files | PascalCase cho folders |
+| **Scenes/** | Unity scenes | PascalCase cho files |
+| **Prefabs/** | Prefab assets | PascalCase cho files |
+| **Resources/** | Runtime assets | PascalCase cho folders |
+| **StreamingAssets/** | Platform assets | PascalCase cho folders |
+
+### Quy tắc đặt tên
+
+#### C# Scripts
+- **Classes**: PascalCase (PlayerController, GameManager)
+- **Methods**: PascalCase (MovePlayer, UpdateHealth)
+- **Fields**: camelCase (moveSpeed, isGrounded)
+- **Properties**: PascalCase (Health, IsAlive)
+- **Constants**: UPPER_CASE (MAX_HEALTH, DEFAULT_SPEED)
+- **Events**: PascalCase (OnPlayerDied, OnScoreChanged)
+
+#### Unity Assets
+- **Scenes**: PascalCase (MainMenu, GameLevel01)
+- **Prefabs**: PascalCase (Player, Enemy_Spider)
+- **Materials**: PascalCase (Player_Material, Ground_Texture)
+- **Textures**: snake_case (player_idle, enemy_walk)
+- **Audio**: snake_case (jump_sound, background_music)
+
+## 📚 Cách sử dụng
+1. Phát triển scripts: xem `unity-script-standards.mdc`
+2. Quản lý assets: xem `unity-asset-standards.mdc`
+3. Tối ưu performance: xem `unity-performance-standards.mdc`
+4. Testing: xem `unity-testing-standards.mdc`
+5. Build và deploy: xem `unity-build-standards.mdc`
+
+## 🔄 Cập nhật quy tắc
+1. Sửa file rule tương ứng
+2. Cập nhật file này nếu thay đổi cấu trúc
+3. Commit và push theo workflow đã quy định
+
+---
+
+Lưu ý: Tất cả rule có `alwaysApply: true` để tự động áp dụng cho toàn bộ Unity project.
