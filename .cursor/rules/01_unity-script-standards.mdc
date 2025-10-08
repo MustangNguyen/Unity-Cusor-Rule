@@ -377,3 +377,47 @@ public bool IsGrounded()
 ---
 
 **Lưu ý**: Tuân thủ các quy tắc này để đảm bảo code Unity dễ đọc, dễ maintain và có performance tốt.
+
+## Architecture & DI (feature-agnostic Core)
+
+- Không dùng Service Locator/global trong gameplay code. Dùng DI qua `CompositionRoot` + interfaces.
+- Chỉ resolve/đăng ký service ở `Bootstrap/CompositionRoot`, không resolve trong scripts domain.
+- Interface ≤ 5 method theo nguyên tắc Interface Segregation; tách nhỏ theo trách nhiệm.
+
+```csharp
+public interface ITimeService { float DeltaTime { get; } float Time { get; } }
+public interface ITickable { void Tick(float dt); }
+public sealed class CompositionRoot : MonoBehaviour {
+    void Awake() {
+        ServiceContainer.Register<ITimeService>(new UnityTimeService());
+        ServiceContainer.Register<IEventBus>(new EventBus());
+        // Không resolve gameplay tại đây
+    }
+}
+```
+
+## Event usage rules
+
+- Dùng event cho cross-module broadcast/low-frequency; còn lại ưu tiên gọi hàm trực tiếp.
+- Đăng ký trong `OnEnable`, hủy trong `OnDisable`. Cấm đăng ký trong `Update`.
+- Quy ước định danh: `Domain.Subject.Action`.
+
+```csharp
+void OnEnable() => eventBus.Sub<LevelLoaded>(OnLevelLoaded);
+void OnDisable() => eventBus.Unsub<LevelLoaded>(OnLevelLoaded);
+```
+
+## State Machine guidelines
+
+- Entity có nhiều trạng thái phải dùng State Machine; tránh `switch` lồng > 2 cấp.
+- Mỗi state là class nhỏ với `Enter/Exit/Update` rõ ràng.
+
+## Domain-agnostic Core contracts
+
+- Trong `_Core` chỉ định nghĩa interfaces hạ tầng (Time, Input, Scene, Save, Event, Tick, Pooling).
+- Mọi danh từ domain (entity, gameplay rules) đặt ở `_Game`.
+
+## Update loop policy
+
+- Giảm số `Update()` rải rác: implement `ITickable` và đăng ký vào `TickManager`.
+- Cấm cấp phát (`new`, LINQ) trong hot path; cache mọi truy cập component lặp lại.

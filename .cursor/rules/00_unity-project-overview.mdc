@@ -82,6 +82,46 @@ Dự án Unity sử dụng kiến trúc component-based với các quy tắc chu
 | **Resources/** | Runtime assets | PascalCase cho folders |
 | **StreamingAssets/** | Platform assets | PascalCase cho folders |
 
+### Kiến trúc module (đề xuất)
+
+```
+Assets/
+├─ _Core/                 # Hạ tầng chung, feature-agnostic
+│  ├─ DI/                 # ServiceContainer, CompositionRoot
+│  ├─ Events/             # EventBus, event types
+│  ├─ TimeInput/          # TimeService, InputService
+│  ├─ SceneFlow/          # SceneLoader, Transition
+│  ├─ SaveData/           # SaveService, IDataStore
+│  ├─ Tick/               # TickManager, ITickable
+│  ├─ Pooling/            # ObjectPool<T>, AudioPool
+│  ├─ Audio/              # AudioService
+│  ├─ UI/                 # UI stack cơ bản
+│  └─ Utils/              # Extensions, Math, Collections
+├─ _Game/                 # Domain/gameplay cụ thể của dự án
+│  ├─ Scripts/
+│  ├─ Data/
+│  ├─ Prefabs/Scenes/...
+├─ _Features/             # Module tái sử dụng (Shop, Daily, Popup…)
+└─ Plugins/               # Bên thứ 3
+```
+
+### Biên giới phụ thuộc
+- `_Core` không phụ thuộc `_Game` hay `_Features`.
+- `_Features` chỉ phụ thuộc `_Core` (không phụ thuộc `_Game`).
+- `_Game` có thể dùng `_Core` và `_Features`.
+
+### Assembly Definitions (asmdef)
+- Tạo: `_Core/_Core.asmdef`, `_Features/_Features.asmdef`, `_Game/_Game.asmdef`.
+- Mỗi module con (vd `Events`, `Tick`) có thể có asmdef riêng nếu cần isolation.
+- Rule tham chiếu: `_Game` → `_Core`, `_Features`; `_Features` → `_Core`; `_Core` → không tham chiếu module khác.
+
+### Checklist migration khỏi Service Locator
+1. Khoanh vùng nơi gọi global (vd `Core.GameManager`).
+2. Tạo `CompositionRoot` đăng ký services qua `ServiceContainer`.
+3. Tiêm dependencies qua constructor/serialized reference thay vì truy cập global.
+4. Di chuyển Update rải rác sang `TickManager` tập trung.
+5. Viết test smoke, gỡ dần usage cũ rồi xóa hẳn global.
+
 ### Quy tắc đặt tên
 
 #### C# Scripts

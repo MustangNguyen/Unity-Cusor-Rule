@@ -1,0 +1,55 @@
+---
+id: "rule-unity-testing"
+name: "Chuẩn hóa Unity Testing"
+description: "Quy tắc testing cho Unity (unit, integration, performance)"
+version: "1.0.0"
+alwaysApply: true
+enabled: true
+priority: 50
+tags: ["unity", "testing", "qa"]
+globs: []
+excludeGlobs: []
+scope: "project"
+services: ["*"]
+appliesTo: ["code", "chat"]
+match: ""
+variables: {}
+rules: []
+examples: []
+references: []
+commands: []
+owners: ["devgo2003"]
+createdAt: "2025-01-06T00:00:00Z"
+updatedAt: "2025-01-06T00:00:00Z"
+notes: "Chuẩn hóa test coverage và performance budgets"
+language: vi
+---
+
+# Unity Testing Standards
+
+## Phạm vi test bắt buộc
+
+- Unit test cho logic core: movement/tick logic, validator, calculators.
+- Integration test tối thiểu: scene bootstrap, service registration, async load.
+- Performance test: budget Tick logic ≤ 0.05 ms ở 60 FPS (PC mid).
+
+## Nguyên tắc
+
+- Mock `ITimeService`, `IInputService`, `IRandomService`. Không mock `MonoBehaviour`.
+- Pure logic tách khỏi `MonoBehaviour` để test dễ dàng.
+- Test data mẫu nằm trong `Assets/_Game/Data/Test`.
+
+## Ví dụ fixture
+
+```csharp
+public sealed class MovementTests {
+    [Test]
+    public void Tick_Should_Advance_Position_Without_Alloc() {
+        var time = new FakeTimeService(1f/60f);
+        var sut = new MovementSystem(time);
+        sut.Tick(time.DeltaTime);
+        Assert.That(sut.Position, Is.Not.EqualTo(Vector3.zero));
+    }
+}
+```
+

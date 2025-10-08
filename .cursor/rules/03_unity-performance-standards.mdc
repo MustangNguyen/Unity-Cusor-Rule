@@ -153,6 +153,20 @@ public class ObjectPool : MonoBehaviour
 }
 ```
 
+### Centralized Tick Manager
+```csharp
+public interface ITickable { void Tick(float dt); }
+public sealed class TickManager : MonoBehaviour {
+    private readonly List<ITickable> tickables = new List<ITickable>(64);
+    void Update() {
+        float dt = Time.deltaTime;
+        for (int i = 0; i < tickables.Count; i++) tickables[i].Tick(dt);
+    }
+    public void Add(ITickable t) => tickables.Add(t);
+    public void Remove(ITickable t) => tickables.Remove(t);
+}
+```
+
 ## Memory Optimization
 
 ### Garbage Collection Optimization
@@ -347,6 +361,29 @@ public class AudioPoolManager : MonoBehaviour
         audioPool.Enqueue(source);
     }
 }
+```
+
+## Performance Budgets
+
+- PC mid: tổng Update < 6 ms; Mobile mid: < 12 ms.
+- Draw calls < 120 (mobile), batches < 200.
+- GC alloc per frame = 0 trong gameplay; dùng object pooling, `StringBuilder`.
+
+## UI/Canvas Rules
+
+- Tách Canvas theo tần suất thay đổi (HUD, Popups, WorldSpace) để giảm rebuild.
+- Dùng atlas cho UI; hạn chế material variants.
+
+## Logging & Diagnostics
+
+- Dùng wrapper `ILog` với cấp `Trace/Info/Warn/Error`. Không `Debug.Log` trực tiếp trong gameplay.
+- Bật/tắt log bằng define symbol `DEV_LOGS`.
+
+```csharp
+public interface ILog { void Info(string m); void Warn(string m); void Error(string m); }
+#if DEV_LOGS
+logger.Info($"Loaded level {id}");
+#endif
 ```
 
 ## UI Optimization

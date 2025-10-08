@@ -1,0 +1,47 @@
+---
+id: "rule-unity-build"
+name: "Chuẩn hóa Unity Build & CI"
+description: "Quy tắc build configuration, CI/CD và profiling"
+version: "1.0.0"
+alwaysApply: true
+enabled: true
+priority: 60
+tags: ["unity", "build", "ci"]
+globs: []
+excludeGlobs: []
+scope: "project"
+services: ["*"]
+appliesTo: ["code", "chat"]
+match: ""
+variables: {}
+rules: []
+examples: []
+references: []
+commands: []
+owners: ["devgo2003"]
+createdAt: "2025-01-06T00:00:00Z"
+updatedAt: "2025-01-06T00:00:00Z"
+notes: "Chuẩn hóa build pipeline và báo cáo hiệu năng"
+language: vi
+---
+
+# Unity Build Standards
+
+## CI Pipeline (đề xuất)
+
+1. Code formatting/lint.
+2. Unit tests + playmode smoke scene.
+3. Addressables build (nếu dùng) hoặc verify load paths.
+4. Build dev (development) cho target chính.
+5. Xuất size report và dependency graph.
+
+## Nightly profiling (khuyến nghị)
+
+- Chạy scene benchmark headless, log: tổng Update ms, GC alloc, draw calls.
+- Lưu artifact (logs, profiler markers) để theo dõi trend.
+
+## Versioning & defines
+
+- Sử dụng SemVer, embed build number vào `PlayerSettings.bundleVersion`.
+- Define symbols theo môi trường: `DEV_LOGS`, `STAGING`, `PROD`.
+

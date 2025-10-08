@@ -509,3 +509,19 @@ public class AssetPool : MonoBehaviour
 ---
 
 **Lưu ý**: Tuân thủ các quy tắc này để đảm bảo assets được quản lý hiệu quả và tối ưu performance.
+
+## Data-driven Levels (đề xuất)
+
+- Lưu cấu hình level bằng `ScriptableObject` hoặc JSON trong `Assets/_Game/Data/Levels`.
+- Mỗi level cần `GridSize`, danh sách `Tiles`, `Spawns`, `Goals` theo `Coordinate`.
+- Có `LevelValidator` chạy trong Editor để kiểm tra dữ liệu trước build.
+
+```csharp
+[CreateAssetMenu(menuName="Game/LevelData")]
+public class LevelData : ScriptableObject {
+    public Vector2Int gridSize;
+    public GridItemData[] tiles;
+    public SpawnData[] spawns;
+    public GoalData[] goals;
+}
+```
