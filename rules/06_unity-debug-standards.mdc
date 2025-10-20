@@ -1,0 +1,445 @@
+---
+id: "rule-unity-debug"
+name: "Chuẩn hóa Unity Debug System"
+description: "Quy tắc sử dụng Interface debug và logging system"
+version: "1.0.0"
+alwaysApply: true
+enabled: true
+priority: 25
+tags: ["unity", "debug", "logging", "interface"]
+globs: ["**/*.cs"]
+excludeGlobs: []
+scope: "project"
+services: ["*"]
+appliesTo: ["code", "chat"]
+match: ""
+variables: {}
+rules: []
+examples: []
+references: []
+commands: []
+owners: ["devgo2003"]
+createdAt: "2025-01-06T00:00:00Z"
+updatedAt: "2025-01-06T00:00:00Z"
+notes: "Chuẩn hóa debug system với Interface và define symbols"
+language: vi
+---
+
+# Chuẩn hóa Unity Debug System
+
+## Tổng quan
+
+Debug system sử dụng Interface pattern để quản lý logging tập trung, có thể bật/tắt toàn cục bằng define symbols và yêu cầu tag để xác định nguồn gốc log.
+
+## Define Symbols
+
+### Debug Enable/Disable
+```csharp
+// Trong Player Settings > Scripting Define Symbols
+// Thêm: ENABLE_DEBUG_LOGS
+
+#if ENABLE_DEBUG_LOGS
+    // Debug code sẽ được compile
+#else
+    // Debug code sẽ bị loại bỏ khỏi build
+#endif
+```
+
+## Interface Debug
+
+### IDebugLogger Interface
+```csharp
+namespace YourProject.Core.Debug
+{
+    /// <summary>
+    /// Interface cho debug logging system
+    /// </summary>
+    public interface IDebugLogger
+    {
+        void Log(string tag, string message);
+        void LogWarning(string tag, string message);
+        void LogError(string tag, string message);
+        void LogException(string tag, System.Exception exception);
+        
+        // Conditional logging
+        void LogIf(bool condition, string tag, string message);
+        void LogWarningIf(bool condition, string tag, string message);
+        void LogErrorIf(bool condition, string tag, string message);
+    }
+}
+```
+
+### DebugLogger Implementation
+```csharp
+namespace YourProject.Core.Debug
+{
+    /// <summary>
+    /// Centralized debug logger với tag support
+    /// </summary>
+    public class DebugLogger : IDebugLogger
+    {
+        private static IDebugLogger _instance;
+        public static IDebugLogger Instance => _instance ??= new DebugLogger();
+
+        public void Log(string tag, string message)
+        {
+#if ENABLE_DEBUG_LOGS
+            UnityEngine.Debug.Log($"[{tag}] {message}");
+#endif
+        }
+
+        public void LogWarning(string tag, string message)
+        {
+#if ENABLE_DEBUG_LOGS
+            UnityEngine.Debug.LogWarning($"[{tag}] {message}");
+#endif
+        }
+
+        public void LogError(string tag, string message)
+        {
+#if ENABLE_DEBUG_LOGS
+            UnityEngine.Debug.LogError($"[{tag}] {message}");
+#endif
+        }
+
+        public void LogException(string tag, System.Exception exception)
+        {
+#if ENABLE_DEBUG_LOGS
+            UnityEngine.Debug.LogException(exception);
+            UnityEngine.Debug.LogError($"[{tag}] Exception: {exception.Message}");
+#endif
+        }
+
+        public void LogIf(bool condition, string tag, string message)
+        {
+#if ENABLE_DEBUG_LOGS
+            if (condition)
+                Log(tag, message);
+#endif
+        }
+
+        public void LogWarningIf(bool condition, string tag, string message)
+        {
+#if ENABLE_DEBUG_LOGS
+            if (condition)
+                LogWarning(tag, message);
+#endif
+        }
+
+        public void LogErrorIf(bool condition, string tag, string message)
+        {
+#if ENABLE_DEBUG_LOGS
+            if (condition)
+                LogError(tag, message);
+#endif
+        }
+    }
+}
+```
+
+## Tag Naming Convention
+
+### Quy tắc đặt tag
+- **Format**: `[SCRIPT_NAME]` hoặc `[MODULE.SCRIPT_NAME]`
+- **Script Name**: Tên class không có suffix (Controller, Manager, etc.)
+- **Module**: Tên module nếu có (Core, Game, Features)
+
+### Ví dụ tag hợp lệ
+```csharp
+// Script: PlayerController.cs
+"[PlayerController]" 
+
+// Script: GameManager.cs trong module Core
+"[Core.GameManager]"
+
+// Script: UIManager.cs trong module Features
+"[Features.UIManager]"
+
+// Script: AudioService.cs
+"[AudioService]"
+```
+
+## Cách sử dụng trong Scripts
+
+### 1. Dependency Injection Pattern
+```csharp
+namespace YourProject.Game
+{
+    public class PlayerController : MonoBehaviour
+    {
+        private IDebugLogger debugLogger;
+        private const string TAG = "[PlayerController]";
+
+        private void Awake()
+        {
+            // Inject từ ServiceContainer
+            debugLogger = ServiceContainer.Resolve<IDebugLogger>();
+        }
+
+        private void Start()
+        {
+            debugLogger.Log(TAG, "Player controller initialized");
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                debugLogger.Log(TAG, "Jump input detected");
+                Jump();
+            }
+        }
+
+        private void Jump()
+        {
+            debugLogger.Log(TAG, $"Jumping with force: {jumpForce}");
+            // Jump logic
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            debugLogger.LogIf(other.CompareTag("Enemy"), TAG, "Player hit enemy!");
+        }
+    }
+}
+```
+
+### 2. Static Access Pattern (Fallback)
+```csharp
+namespace YourProject.Game
+{
+    public class EnemyAI : MonoBehaviour
+    {
+        private const string TAG = "[EnemyAI]";
+
+        private void Start()
+        {
+            DebugLogger.Instance.Log(TAG, "Enemy AI started");
+        }
+
+        private void Update()
+        {
+            if (IsPlayerInRange())
+            {
+                DebugLogger.Instance.Log(TAG, "Player detected in range");
+                AttackPlayer();
+            }
+        }
+
+        private void AttackPlayer()
+        {
+            DebugLogger.Instance.LogWarning(TAG, "Attacking player!");
+            // Attack logic
+        }
+
+        private void OnDestroy()
+        {
+            DebugLogger.Instance.Log(TAG, "Enemy AI destroyed");
+        }
+    }
+}
+```
+
+## Service Registration
+
+### Trong CompositionRoot
+```csharp
+namespace YourProject.Core
+{
+    public class CompositionRoot : MonoBehaviour
+    {
+        private void Awake()
+        {
+            RegisterServices();
+        }
+
+        private void RegisterServices()
+        {
+            // Register debug logger
+            ServiceContainer.Register<IDebugLogger>(DebugLogger.Instance);
+            
+            // Other services...
+        }
+    }
+}
+```
+
+## Advanced Debug Features
+
+### Conditional Debug với Categories
+```csharp
+namespace YourProject.Core.Debug
+{
+    public enum DebugCategory
+    {
+        General,
+        Performance,
+        Network,
+        UI,
+        Audio,
+        Physics
+    }
+
+    public interface IAdvancedDebugLogger : IDebugLogger
+    {
+        void LogCategory(DebugCategory category, string tag, string message);
+        void SetCategoryEnabled(DebugCategory category, bool enabled);
+        bool IsCategoryEnabled(DebugCategory category);
+    }
+}
+```
+
+### Performance Debug
+```csharp
+namespace YourProject.Core.Debug
+{
+    public class PerformanceDebugger
+    {
+        private const string TAG = "[PerformanceDebugger]";
+        private IDebugLogger logger;
+
+        public PerformanceDebugger(IDebugLogger logger)
+        {
+            this.logger = logger;
+        }
+
+        public void LogFrameTime()
+        {
+            logger.LogIf(Time.deltaTime > 0.033f, TAG, 
+                $"Frame time: {Time.deltaTime:F3}s (Target: 0.033s)");
+        }
+
+        public void LogMemoryUsage()
+        {
+            long memory = System.GC.GetTotalMemory(false);
+            logger.LogIf(memory > 100 * 1024 * 1024, TAG, 
+                $"Memory usage: {memory / 1024 / 1024}MB");
+        }
+    }
+}
+```
+
+## Best Practices
+
+### 1. Tag Consistency
+```csharp
+// ✅ ĐÚNG - Consistent tag naming
+private const string TAG = "[PlayerController]";
+
+// ❌ SAI - Inconsistent tag
+debugLogger.Log("[Player]", "Message");
+debugLogger.Log("[PLAYER_CONTROLLER]", "Message");
+debugLogger.Log("PlayerController", "Message");
+```
+
+### 2. Meaningful Messages
+```csharp
+// ✅ ĐÚNG - Descriptive messages
+debugLogger.Log(TAG, $"Player health changed from {oldHealth} to {newHealth}");
+debugLogger.Log(TAG, $"Loading level: {levelName}");
+
+// ❌ SAI - Vague messages
+debugLogger.Log(TAG, "Something happened");
+debugLogger.Log(TAG, "Update");
+```
+
+### 3. Conditional Logging
+```csharp
+// ✅ ĐÚNG - Use conditional logging for performance
+debugLogger.LogIf(isDebugMode, TAG, "Debug information");
+debugLogger.LogIf(playerHealth < 50, TAG, "Player health is low!");
+
+// ❌ SAI - Always logging expensive operations
+debugLogger.Log(TAG, $"Player position: {transform.position}");
+```
+
+### 4. Error Handling
+```csharp
+// ✅ ĐÚNG - Proper error logging
+try
+{
+    LoadPlayerData();
+}
+catch (System.Exception ex)
+{
+    debugLogger.LogException(TAG, ex);
+    debugLogger.LogError(TAG, "Failed to load player data");
+}
+```
+
+## Build Configuration
+
+### Development Build
+```csharp
+// Player Settings > Scripting Define Symbols
+// Development: ENABLE_DEBUG_LOGS
+
+#if ENABLE_DEBUG_LOGS
+    // Debug logging enabled
+#endif
+```
+
+### Production Build
+```csharp
+// Production: Không có ENABLE_DEBUG_LOGS
+// Tất cả debug code sẽ bị loại bỏ khỏi build
+```
+
+## Testing Support
+
+### Mock Debug Logger cho Tests
+```csharp
+namespace YourProject.Tests
+{
+    public class MockDebugLogger : IDebugLogger
+    {
+        public List<string> Logs { get; } = new List<string>();
+        public List<string> Warnings { get; } = new List<string>();
+        public List<string> Errors { get; } = new List<string>();
+
+        public void Log(string tag, string message)
+        {
+            Logs.Add($"[{tag}] {message}");
+        }
+
+        public void LogWarning(string tag, string message)
+        {
+            Warnings.Add($"[{tag}] {message}");
+        }
+
+        public void LogError(string tag, string message)
+        {
+            Errors.Add($"[{tag}] {message}");
+        }
+
+        // Other methods...
+    }
+}
+```
+
+## Migration Guide
+
+### Từ Debug.Log sang IDebugLogger
+```csharp
+// ❌ CŨ - Direct Debug.Log
+Debug.Log("Player moved");
+Debug.LogWarning("Low health!");
+Debug.LogError("Failed to load");
+
+// ✅ MỚI - IDebugLogger với tag
+private const string TAG = "[PlayerController]";
+private IDebugLogger logger;
+
+logger.Log(TAG, "Player moved");
+logger.LogWarning(TAG, "Low health!");
+logger.LogError(TAG, "Failed to load");
+```
+
+---
+
+**Lưu ý**: 
+- Luôn sử dụng tag để xác định nguồn gốc log
+- Sử dụng define symbols để control debug trong build
+- Inject IDebugLogger thay vì sử dụng static access
+- Tuân thủ naming convention cho tags
+- Sử dụng conditional logging cho performance

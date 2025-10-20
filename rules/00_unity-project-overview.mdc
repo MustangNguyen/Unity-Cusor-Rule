@@ -61,6 +61,12 @@ Dự án Unity sử dụng kiến trúc component-based với các quy tắc chu
 - Platform-specific optimizations
 - Distribution workflows
 
+### 6. Unity Debug Standards (`unity-debug-standards.mdc`)
+- Debug logging system với Interface pattern
+- Define symbols để control debug trong build
+- Tag format và naming conventions
+- Performance debugging guidelines
+
 ## 🎯 Mục tiêu chung
 - Chuẩn hóa code structure và naming conventions
 - Tối ưu hóa performance và memory usage
@@ -145,6 +151,7 @@ Assets/
 3. Tối ưu performance: xem `unity-performance-standards.mdc`
 4. Testing: xem `unity-testing-standards.mdc`
 5. Build và deploy: xem `unity-build-standards.mdc`
+6. Debug và logging: xem `unity-debug-standards.mdc`
 
 ## 🔄 Cập nhật quy tắc
 1. Sửa file rule tương ứng

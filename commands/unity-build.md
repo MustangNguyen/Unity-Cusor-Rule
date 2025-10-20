@@ -20,7 +20,49 @@ Tự động hóa quá trình build Unity project cho các platform khác nhau
 - **iOS**: iOS Xcode project
 - **WebGL**: WebGL
 
-### 3. Build Settings
+### 3. Define Symbols Configuration
+
+#### Development Build
+```csharp
+// Player Settings > Scripting Define Symbols
+// Development: ENABLE_DEBUG_LOGS
+```
+
+#### Production Build
+```csharp
+// Production: Remove ENABLE_DEBUG_LOGS để optimize build size
+// Chỉ giữ lại: UNITY_EDITOR (nếu cần)
+```
+
+#### Debug Configuration Method
+```csharp
+private static void ConfigureDebugSymbols(bool isDevelopment)
+{
+    BuildTargetGroup targetGroup = BuildTargetGroup.Standalone;
+    string currentDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
+    
+    if (isDevelopment)
+    {
+        // Add debug symbol if not present
+        if (!currentDefines.Contains("ENABLE_DEBUG_LOGS"))
+        {
+            currentDefines += ";ENABLE_DEBUG_LOGS";
+        }
+    }
+    else
+    {
+        // Remove debug symbol for production
+        currentDefines = currentDefines.Replace("ENABLE_DEBUG_LOGS;", "")
+                                     .Replace(";ENABLE_DEBUG_LOGS", "")
+                                     .Replace("ENABLE_DEBUG_LOGS", "");
+    }
+    
+    PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, currentDefines);
+    Debug.Log($"Define symbols configured: {currentDefines}");
+}
+```
+
+### 4. Build Settings
 ```csharp
 // Build settings cho PC
 BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
@@ -30,7 +72,7 @@ buildPlayerOptions.target = BuildTarget.StandaloneWindows64;
 buildPlayerOptions.options = BuildOptions.None;
 ```
 
-### 4. Post-build Actions
+### 5. Post-build Actions
 - Copy additional files
 - Run post-processing scripts
 - Generate build report
@@ -43,9 +85,11 @@ buildPlayerOptions.options = BuildOptions.None;
 - `unity-build:webgl` - Build cho WebGL
 - `unity-build:all` - Build tất cả platforms
 
-## Build Scripts
+## Build Script Templates
 
-### PC Build Script
+Các script templates này có thể được copy và customize cho project cụ thể.
+
+### PC Build Script Template
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -87,6 +131,10 @@ public class PCBuildScript
 
     private static bool PreBuildChecks()
     {
+        // Configure debug symbols based on build type
+        bool isDevelopment = EditorUserBuildSettings.development;
+        ConfigureDebugSymbols(isDevelopment);
+        
         // Check for missing references
         if (HasMissingReferences())
         {
@@ -191,7 +239,7 @@ public class PCBuildScript
 }
 ```
 
-### Android Build Script
+### Android Build Script Template
 ```csharp
 public class AndroidBuildScript
 {
@@ -239,7 +287,7 @@ public class AndroidBuildScript
 }
 ```
 
-### iOS Build Script
+### iOS Build Script Template
 ```csharp
 public class iOSBuildScript
 {
@@ -287,7 +335,7 @@ public class iOSBuildScript
 }
 ```
 
-### WebGL Build Script
+### WebGL Build Script Template
 ```csharp
 public class WebGLBuildScript
 {
@@ -496,6 +544,30 @@ public class BuildValidator
         return false;
     }
 }
+```
+
+## Debug Build vs Release Build
+
+### Development Build Checklist
+- [ ] ENABLE_DEBUG_LOGS symbol được thêm vào
+- [ ] Debug logging hoạt động bình thường
+- [ ] Performance debugging có thể sử dụng
+- [ ] Tất cả debug methods available
+
+### Production Build Checklist
+- [ ] ENABLE_DEBUG_LOGS symbol bị loại bỏ
+- [ ] Debug code bị strip khỏi build
+- [ ] Build size được optimize
+- [ ] Performance không bị ảnh hưởng bởi debug code
+
+### Debug Symbol Management
+```csharp
+// Kiểm tra debug symbol hiện tại
+string currentDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+bool hasDebugLogs = currentDefines.Contains("ENABLE_DEBUG_LOGS");
+
+Debug.Log($"Current defines: {currentDefines}");
+Debug.Log($"Has debug logs: {hasDebugLogs}");
 ```
 
 ## Best Practices
