@@ -1,7 +1,7 @@
-# 🔍 ANALYZE COMMAND - HỆ THỐNG PHÂN TÍCH UNITY
+# 🐛 BUG-ANALYZE COMMAND - HỆ THỐNG PHÂN TÍCH LỖI UNITY
 
 ## 📋 TỔNG QUAN
-Phân tích và tìm kiếm vấn đề Unity (CHỈ PHÂN TÍCH - KHÔNG SỬA)
+Phân tích và tìm kiếm lỗi Unity (CHỈ PHÂN TÍCH - KHÔNG SỬA)
 
 ---
 
@@ -16,21 +16,20 @@ Phân tích và tìm kiếm vấn đề Unity (CHỈ PHÂN TÍCH - KHÔNG SỬA)
 # 🧩 PHẠM VI PHÂN TÍCH VÀ KIỂM TRA
 - Lỗi runtime/Editor, build fail, UI/Audio/Animation/Physics issues.
 - Performance: CPU, GC, Draw Calls, Memory, UI Canvas.
-- Kiến trúc: asmdef, DI, Update loop, Event usage, TickManager.
 - Assets: import settings, missing GUID, Addressables (nếu có).
 
 ---
 
 # 🧠 ĐẦU VÀO VÀ CÁCH SỬ DỤNG
 - Mô tả triệu chứng/ngữ cảnh, log/error (nếu có).
-- Chọn chế độ: `mode=error|performance|build|asset|architecture` (mặc định: auto).
+- Chọn chế độ: `mode=error|performance|build|asset` (mặc định: auto).
 - Tuỳ chọn: target scene, platform (Standalone/Android/iOS), Unity version.
 
 Ví dụ:
 ```
-analyze: mode=error
-analyze: mode=performance platform=Android
-analyze: Build Android fail với lỗi Gradle
+bug-analyze: mode=error
+bug-analyze: mode=performance platform=Android
+bug-analyze: Build Android fail với lỗi Gradle
 ```
 
 ---
@@ -73,7 +72,6 @@ analyze: Build Android fail với lỗi Gradle
 - `asmdef`: tham chiếu chéo sai, vòng lặp, missing reference.
 - `Resources/Addressables` (nếu dùng): key, label, load path.
 - Naming/structure theo `_Core/_Features/_Game`; biên giới phụ thuộc.
-- Update loop policy: Update rải rác vs `ITickable`.
 
 ### 🎮 BƯỚC 4: KIỂM TRA SCENE VÀ INSPECTOR
 - Missing references, inactive chains, Tag/Layer/SortingLayer sai.
@@ -98,7 +96,6 @@ analyze: Build Android fail với lỗi Gradle
 - mode=performance: Ưu tiên Profiler/GC, Update consolidation, batching, texture formats.
 - mode=build: PlayerSettings, Gradle/Xcode logs, define symbols, scripting backend, min SDKs.
 - mode=asset: Import settings, GUID orphan, platform overrides, mipmaps/ASTC, audio load type.
-- mode=architecture: `asmdef` graph, DI/ServiceContainer, event rules, TickManager policy.
 
 ---
 
@@ -115,12 +112,12 @@ analyze: Build Android fail với lỗi Gradle
 
 # 🧪 MẪU PROMPT CHO AI AGENT
 ```text
-Bạn là trợ lý Unity, CHỈ PHÂN TÍCH VÀ TÌM KIẾM, KHÔNG sửa code/assets, KHÔNG đưa giải pháp.
+Bạn là trợ lý Unity, CHỈ PHÂN TÍCH VÀ TÌM KIẾM LỖI, KHÔNG sửa code/assets, KHÔNG đưa giải pháp.
 
 Thực hiện theo pipeline:
 0) /summarize-chat
 1) Thu thập bằng chứng (Console/logs/Inspector)
-2) Static checks (asmdef, missing, structure, update policy)
+2) Static checks (asmdef, missing, structure)
 3) Scene/Inspector audit
 4) Perf probe (nếu phù hợp)
 5) Kết luận nguyên nhân gốc rễ (chỉ khi đủ bằng chứng)
@@ -150,11 +147,11 @@ Thực hiện theo pipeline:
 
 # 🧷 VÍ DỤ SỬ DỤNG VÀ CÁC TRƯỜNG HỢP THỰC TẾ
 ```
-analyze: mode=error
-analyze: Player không di chuyển, không có error console
-analyze: Build iOS fail, lỗi bitcode/IL2CPP
-analyze: FPS drop mạnh khi mở UI Inventory
-analyze: MissingComponentException ở EnemyController
+bug-analyze: mode=error
+bug-analyze: Player không di chuyển, không có error console
+bug-analyze: Build iOS fail, lỗi bitcode/IL2CPP
+bug-analyze: FPS drop mạnh khi mở UI Inventory
+bug-analyze: MissingComponentException ở EnemyController
 ```
 
 ---
@@ -196,13 +193,4 @@ analyze: MissingComponentException ở EnemyController
 ✅ Platform overrides
 ✅ Addressables key/label
 ✅ Compression settings
-```
-
-## 🏗️ CHẾ ĐỘ ARCHITECTURE - PHÂN TÍCH KIẾN TRÚC
-```
-✅ Assembly Definition references
-✅ DI/ServiceContainer setup
-✅ Event subscription/unsubscription
-✅ Update loop consolidation
-✅ _Core/_Features/_Game boundaries
 ```
