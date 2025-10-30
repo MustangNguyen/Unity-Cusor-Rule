@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace YourProject.Core.Debug
+namespace BeautyScrewJam.Core.Debug
 {
     /// <summary>
     /// Advanced debug cho performance metrics và monitoring

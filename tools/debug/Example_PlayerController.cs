@@ -1,7 +1,7 @@
 using UnityEngine;
-using YourProject.Core.Debug;
+using BeautyScrewJam.Core.Debug;
 
-namespace YourProject.Game
+namespace BeautyScrewJam.Game
 {
     /// <summary>
     /// Ví dụ sử dụng IDebugLogger với DI pattern

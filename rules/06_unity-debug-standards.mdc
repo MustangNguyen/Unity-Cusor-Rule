@@ -49,7 +49,7 @@ Debug system sử dụng Interface pattern để quản lý logging tập trung,
 
 ### IDebugLogger Interface
 ```csharp
-namespace YourProject.Core.Debug
+namespace BeautyScrewJam.Core.Debug
 {
     /// <summary>
     /// Interface cho debug logging system
@@ -71,7 +71,7 @@ namespace YourProject.Core.Debug
 
 ### DebugLogger Implementation
 ```csharp
-namespace YourProject.Core.Debug
+namespace BeautyScrewJam.Core.Debug
 {
     /// <summary>
     /// Centralized debug logger với tag support
@@ -163,7 +163,7 @@ namespace YourProject.Core.Debug
 
 ### 1. Dependency Injection Pattern
 ```csharp
-namespace YourProject.Game
+namespace BeautyScrewJam.Game
 {
     public class PlayerController : MonoBehaviour
     {
@@ -206,7 +206,7 @@ namespace YourProject.Game
 
 ### 2. Static Access Pattern (Fallback)
 ```csharp
-namespace YourProject.Game
+namespace BeautyScrewJam.Game
 {
     public class EnemyAI : MonoBehaviour
     {
@@ -244,7 +244,7 @@ namespace YourProject.Game
 
 ### Trong CompositionRoot
 ```csharp
-namespace YourProject.Core
+namespace BeautyScrewJam.Core
 {
     public class CompositionRoot : MonoBehaviour
     {
@@ -268,7 +268,7 @@ namespace YourProject.Core
 
 ### Conditional Debug với Categories
 ```csharp
-namespace YourProject.Core.Debug
+namespace BeautyScrewJam.Core.Debug
 {
     public enum DebugCategory
     {
@@ -291,7 +291,7 @@ namespace YourProject.Core.Debug
 
 ### Performance Debug
 ```csharp
-namespace YourProject.Core.Debug
+namespace BeautyScrewJam.Core.Debug
 {
     public class PerformanceDebugger
     {
@@ -389,7 +389,7 @@ catch (System.Exception ex)
 
 ### Mock Debug Logger cho Tests
 ```csharp
-namespace YourProject.Tests
+namespace BeautyScrewJam.Tests
 {
     public class MockDebugLogger : IDebugLogger
     {

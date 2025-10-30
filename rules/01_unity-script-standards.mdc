@@ -33,7 +33,7 @@ language: vi
 using UnityEngine;
 using System.Collections;
 
-namespace YourProject.Core
+namespace BeautyScrewJam.Core
 {
     /// <summary>
     /// Mô tả chức năng của script
@@ -306,6 +306,17 @@ private IEnumerator DelayedAction()
     // Do something after delay
 }
 ```
+
+### 5. Checklist an toàn trước khi sửa đổi/refactor hàm
+
+> **Checklist cần thực hiện trước khi chỉnh sửa, xóa, refactor hoặc mở rộng bất kỳ hàm/chức năng nào:**
+>
+> - [ ] **Kiểm tra usage:** Đã kiểm tra hàm/chức năng này còn đang được sử dụng, gọi hoặc tham chiếu ở đâu khác không? (Dùng IDE, global search, code map...)
+> - [ ] **Cảnh báo side effect:** Nếu có usage ngoài ý định, thông báo lên code review hoặc liên hệ chủ code/phụ trách module liên quan.
+> - [ ] **Không còn usage:** Nếu không còn ai sử dụng, cân nhắc xóa luôn hoặc move code cũ sang vùng backup/documentation.
+> - [ ] **Bảo toàn backward compatibility:** Nếu bắt buộc phải sửa signature hoặc logic, xác định rõ vùng bị ảnh hưởng (góc code, integration, tests...)
+> - [ ] **Viết lại unit/integration test nếu thay đổi logic.**
+
 
 ## Documentation Standards
 
