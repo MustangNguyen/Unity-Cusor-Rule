@@ -133,7 +133,7 @@ Assets/
 #### C# Scripts
 - **Classes**: PascalCase (PlayerController, GameManager)
 - **Methods**: PascalCase (MovePlayer, UpdateHealth)
-- **Fields**: camelCase (moveSpeed, isGrounded)
+- **Fields**: camelCase (có [SerializeField]) hoặc m_ prefix (không [SerializeField])
 - **Properties**: PascalCase (Health, IsAlive)
 - **Constants**: UPPER_CASE (MAX_HEALTH, DEFAULT_SPEED)
 - **Events**: PascalCase (OnPlayerDied, OnScoreChanged)

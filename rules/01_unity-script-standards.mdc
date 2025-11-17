@@ -49,9 +49,9 @@ namespace BeautyScrewJam.Core
         [SerializeField] private Rigidbody rb;
         [SerializeField] private Transform groundCheck;
         
-        // Private fields
-        private bool isGrounded;
-        private float horizontalInput;
+        // Private fields không SerializeField
+        private bool m_isGrounded;
+        private float m_horizontalInput;
         #endregion
 
         #region Unity Lifecycle
@@ -86,7 +86,7 @@ namespace BeautyScrewJam.Core
         #region Public Methods
         public void Jump()
         {
-            if (isGrounded)
+            if (m_isGrounded)
             {
                 rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             }
@@ -101,7 +101,7 @@ namespace BeautyScrewJam.Core
         #region Private Methods
         private void HandleInput()
         {
-            horizontalInput = Input.GetAxis("Horizontal");
+            m_horizontalInput = Input.GetAxis("Horizontal");
             
             if (Input.GetButtonDown("Jump"))
             {
@@ -111,7 +111,7 @@ namespace BeautyScrewJam.Core
 
         private void HandleMovement()
         {
-            Vector3 movement = new Vector3(horizontalInput, 0f, 0f) * moveSpeed * Time.fixedDeltaTime;
+            Vector3 movement = new Vector3(m_horizontalInput, 0f, 0f) * moveSpeed * Time.fixedDeltaTime;
             rb.MovePosition(transform.position + movement);
         }
         #endregion
@@ -140,7 +140,8 @@ namespace BeautyScrewJam.Core
 
 ### Fields và Variables
 - **Public Fields**: PascalCase (MoveSpeed, JumpForce) - Tránh sử dụng
-- **Private Fields**: camelCase (moveSpeed, isGrounded, currentHealth)
+- **Private Fields có [SerializeField]**: camelCase (moveSpeed, isGrounded, currentHealth)
+- **Private Fields không [SerializeField]**: camelCase với prefix `m_` (m_moveSpeed, m_isGrounded, m_currentHealth)
 - **Static Fields**: PascalCase (MaxHealth, DefaultSpeed)
 - **Constants**: UPPER_CASE (MAX_HEALTH, DEFAULT_SPEED, LAYER_PLAYER)
 - **Local Variables**: camelCase (playerPosition, enemyCount, tempValue)
@@ -150,16 +151,22 @@ namespace BeautyScrewJam.Core
 ### SerializeField và Public Fields
 ```csharp
 [Header("Movement Settings")]
-[SerializeField] private float moveSpeed = 5f;
-[SerializeField] private float jumpForce = 10f;
+[SerializeField] private float moveSpeed = 5f;        // ✅ camelCase (có SerializeField)
+[SerializeField] private float jumpForce = 10f;       // ✅ camelCase (có SerializeField)
 
 [Header("References")]
-[SerializeField] private Rigidbody rb;
-[SerializeField] private Transform groundCheck;
+[SerializeField] private Rigidbody rb;                 // ✅ camelCase (có SerializeField)
+[SerializeField] private Transform groundCheck;        // ✅ camelCase (có SerializeField)
 
 [Header("Audio")]
-[SerializeField] private AudioSource audioSource;
-[SerializeField] private AudioClip jumpSound;
+[SerializeField] private AudioSource audioSource;      // ✅ camelCase (có SerializeField)
+[SerializeField] private AudioClip jumpSound;          // ✅ camelCase (có SerializeField)
+
+// Private fields không SerializeField - dùng prefix m_
+private bool m_isGrounded;                             // ✅ m_ prefix
+private float m_horizontalInput;                       // ✅ m_ prefix
+private Vector3 m_lastPosition;                        // ✅ m_ prefix
+private int m_enemyCount;                              // ✅ m_ prefix
 ```
 
 ### Validation Attributes
@@ -231,18 +238,18 @@ private void Update()
 }
 
 // ✅ ĐÚNG - Cache references và optimize
-private GameManager gameManager;
+private GameManager m_gameManager;
 
 private void Start()
 {
-    gameManager = FindObjectOfType<GameManager>();
+    m_gameManager = FindObjectOfType<GameManager>();
 }
 
 private void Update()
 {
     if (Input.GetKeyDown(KeyCode.Space))
     {
-        gameManager.DoSomething();
+        m_gameManager.DoSomething();
     }
 }
 ```
@@ -257,12 +264,12 @@ private void Update()
 }
 
 // ✅ ĐÚNG - Reuse objects
-private Vector3 newPosition = new Vector3();
+private Vector3 m_newPosition = new Vector3();
 
 private void Update()
 {
-    newPosition.Set(1, 2, 3);
-    transform.position = newPosition;
+    m_newPosition.Set(1, 2, 3);
+    transform.position = m_newPosition;
 }
 ```
 
@@ -271,20 +278,20 @@ private void Update()
 ### 1. Null Checks
 ```csharp
 // Luôn kiểm tra null trước khi sử dụng
-if (rb != null)
+if (m_rb != null)
 {
-    rb.AddForce(Vector3.up * jumpForce);
+    m_rb.AddForce(Vector3.up * jumpForce);
 }
 ```
 
 ### 2. Component Caching
 ```csharp
 // Cache components trong Awake/Start
-private Rigidbody rb;
+private Rigidbody m_rb;
 
 private void Awake()
 {
-    rb = GetComponent<Rigidbody>();
+    m_rb = GetComponent<Rigidbody>();
 }
 ```
 
@@ -381,7 +388,7 @@ public void SetHealth(float newHealth)
 // Test helper methods
 public bool IsGrounded()
 {
-    return isGrounded;
+    return m_isGrounded;
 }
 ```
 
